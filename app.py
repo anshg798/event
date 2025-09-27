@@ -5,7 +5,7 @@ from typing import List
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
-from serpapi import GoogleSearch  # ✅ PyPI stable import
+from serpapi.google_search_results import GoogleSearch  # ✅ Correct PyPI import
 from dotenv import load_dotenv
 import google.generativeai as genai
 from bs4 import BeautifulSoup
@@ -74,7 +74,7 @@ def extract_events_from_description(description: str, booking_link: str, city: s
     if not GEMINI_API_KEY:
         return [{
             "date": "-",
-            "name": description[:50]+"...",
+            "name": description[:50] + "...",
             "place": city,
             "booking_link": booking_link,
             "description": description
@@ -110,7 +110,7 @@ def extract_events_from_description(description: str, booking_link: str, city: s
     except Exception:
         return [{
             "date": "-",
-            "name": description[:50]+"...",
+            "name": description[:50] + "...",
             "place": city,
             "booking_link": booking_link,
             "description": description
@@ -140,6 +140,7 @@ def normalize_events(events: List[dict]) -> List[Event]:
 async def get_events(request: EventRequest):
     city = request.city
     query = f"upcoming events in {city} next 3 months site:in"
+
     try:
         search = GoogleSearch({
             "engine": "google",
