@@ -4,5 +4,5 @@ pydantic==2.6.2
 requests==2.32.0
 beautifulsoup4==4.13.0
 python-dotenv==1.0.1
-serpapi==1.0.6
+serpapi==0.1.5
 google-generativeai==0.1.6
