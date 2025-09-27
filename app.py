@@ -5,7 +5,7 @@ from typing import List
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
-from serpapi.google_search import GoogleSearch   # ✅ Correct import
+from serpapi import GoogleSearch  # ✅ PyPI stable import
 from dotenv import load_dotenv
 import google.generativeai as genai
 from bs4 import BeautifulSoup
@@ -139,8 +139,7 @@ def normalize_events(events: List[dict]) -> List[Event]:
 @app.post("/get-events", response_model=List[Event])
 async def get_events(request: EventRequest):
     city = request.city
-    query = f"upcoming events in {city} next 3 months"
-
+    query = f"upcoming events in {city} next 3 months site:in"
     try:
         search = GoogleSearch({
             "engine": "google",
