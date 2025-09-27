@@ -5,7 +5,7 @@ from typing import List
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
-from serpapi.google_search_results import GoogleSearch  # ✅ Correct PyPI import
+from serpapi import GoogleSearch   # ✅ Correct PyPI import
 from dotenv import load_dotenv
 import google.generativeai as genai
 from bs4 import BeautifulSoup
