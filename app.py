@@ -5,7 +5,7 @@ from typing import List
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
-from serpapi import GoogleSearch
+from serpapi.google_search import GoogleSearch   # ✅ Correct import
 from dotenv import load_dotenv
 import google.generativeai as genai
 from bs4 import BeautifulSoup
@@ -63,17 +63,22 @@ def fetch_full_description(link: str, fallback_description: str) -> str:
         resp = requests.get(link, timeout=10)
         if resp.status_code == 200:
             soup = BeautifulSoup(resp.text, "html.parser")
-            # Extract all text from body
             text = soup.get_text(separator=" ", strip=True)
             return text if text else fallback_description
     except Exception:
         pass
     return fallback_description
 
-# --- Extract multiple structured events using Gemini ---
+# --- Extract structured events using Gemini ---
 def extract_events_from_description(description: str, booking_link: str, city: str) -> List[dict]:
     if not GEMINI_API_KEY:
-        return [{"date": "-", "name": description[:50]+"...", "place": city, "booking_link": booking_link, "description": description}]
+        return [{
+            "date": "-",
+            "name": description[:50]+"...",
+            "place": city,
+            "booking_link": booking_link,
+            "description": description
+        }]
     try:
         full_text = fetch_full_description(booking_link, description)
         prompt = (
@@ -86,13 +91,12 @@ def extract_events_from_description(description: str, booking_link: str, city: s
         model = genai.GenerativeModel("gemini-2.5-flash")
         resp = model.generate_content(
             prompt,
-            generation_config={"temperature":0, "max_output_tokens":3500}
+            generation_config={"temperature": 0, "max_output_tokens": 3500}
         )
         text = resp.text.strip()
         if text.startswith("```"):
             text = "\n".join(text.split("\n")[1:-1]).strip()
         events = json.loads(text)
-        # Ensure all required fields exist
         structured_events = []
         for e in events:
             structured_events.append({
@@ -104,8 +108,13 @@ def extract_events_from_description(description: str, booking_link: str, city: s
             })
         return structured_events
     except Exception:
-        # fallback to single event
-        return [{"date": "-", "name": description[:50]+"...", "place": city, "booking_link": booking_link, "description": description}]
+        return [{
+            "date": "-",
+            "name": description[:50]+"...",
+            "place": city,
+            "booking_link": booking_link,
+            "description": description
+        }]
 
 # --- Normalize & deduplicate ---
 def normalize_events(events: List[dict]) -> List[Event]:
@@ -123,7 +132,6 @@ def normalize_events(events: List[dict]) -> List[Event]:
             booking_link=e.get("booking_link", "") or "N/A",
             description=e.get("description", "") or "N/A"
         ))
-    # Sort by date (simple string sort)
     out.sort(key=lambda x: x.date)
     return out
 
@@ -131,7 +139,7 @@ def normalize_events(events: List[dict]) -> List[Event]:
 @app.post("/get-events", response_model=List[Event])
 async def get_events(request: EventRequest):
     city = request.city
-    query = f"upcoming events in {city} next 3 months site:in"
+    query = f"upcoming events in {city} next 3 months"
 
     try:
         search = GoogleSearch({
