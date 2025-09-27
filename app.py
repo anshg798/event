@@ -1,7 +1,7 @@
 import os
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel
-from serpapi import GoogleSearch
+from serpapi.google_search_results import GoogleSearch 
 import google.generativeai as genai
 from dotenv import load_dotenv
 from datetime import datetime
